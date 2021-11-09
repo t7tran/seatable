@@ -1,0 +1,41 @@
+version: "2.0"
+services:
+  mysql:
+    image: t7tran/mysql:5.7
+    container_name: seatable-mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=mypassword
+      - MYSQL_LOG_CONSOLE=true
+    volumes:
+      - seatable-db:/var/lib/mysql
+
+  memcached:
+    image: memcached:1.5.6
+    container_name: seatable-memcached
+    entrypoint: memcached -m 256
+
+  redis:
+    image: redis:6.0
+    container_name: seatable-redis
+
+  seatable:
+    image: seatable/seatable:latest
+    container_name: seatable
+    ports:
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      - seatable-data:/shared
+    environment:
+      - DB_HOST=mysql
+      - DB_ROOT_PASSWD=mypassword 
+      - SEATABLE_SERVER_LETSENCRYPT=false
+      - SEATABLE_SERVER_HOSTNAME=localhost:8080
+      - TIME_ZONE=UTC
+    depends_on:
+      - mysql
+      - memcached
+      - redis
+volumes:
+  seatable-db:
+  seatable-data:
